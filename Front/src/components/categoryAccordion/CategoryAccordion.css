@@ -1,0 +1,82 @@
+.category-accordion {
+  width: 100%;
+  max-width: 1100px;
+  margin: 1rem auto;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.category-header {
+  width: 100%;
+  color: white;
+  border: none;
+  padding: 1.5rem 2rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.3s ease;
+}
+
+/* Santé - Bleu */
+.category-sante {
+  background: linear-gradient(135deg, #3b5bdb 0%, #4c6ef5 100%);
+}
+
+.category-sante:hover {
+  background: linear-gradient(135deg, #2f4bba 0%, #3b5edb 100%);
+  box-shadow: 0 6px 16px rgba(59, 91, 219, 0.3);
+}
+
+/* Danger - Orange */
+.category-danger {
+  background: linear-gradient(135deg, #e8590c 0%, #fd7e14 100%);
+}
+
+.category-danger:hover {
+  background: linear-gradient(135deg, #d6490a 0%, #e8690c 100%);
+  box-shadow: 0 6px 16px rgba(232, 89, 12, 0.3);
+}
+
+/* Incendie - Rouge */
+.category-incendie {
+  background: linear-gradient(135deg, #c92a2a 0%, #e03131 100%);
+}
+
+.category-incendie:hover {
+  background: linear-gradient(135deg, #b02525 0%, #c92a2a 100%);
+  box-shadow: 0 6px 16px rgba(201, 42, 42, 0.3);
+}
+
+.category-header-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.category-icon {
+  width: 28px;
+  height: 28px;
+  stroke-width: 2.5;
+}
+
+.category-label {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.category-arrow {
+  font-size: 1rem;
+  transition: transform 0.3s ease;
+}
+
+.sub-categories {
+  background: white;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
