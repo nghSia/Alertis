@@ -4,7 +4,7 @@
 
 -- Type pour les rôles (Patrouilles créées à la main, Users via inscription)
 DO $$ BEGIN
-    CREATE TYPE user_role AS ENUM ('user', 'patrol');
+    CREATE TYPE user_role AS ENUM ('client', 'patrol');
 EXCEPTION
     WHEN duplicate_object THEN null;
 END $$;
@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   nom TEXT NOT NULL,
   prenom TEXT NOT NULL,
   tel TEXT NOT NULL,
-  role user_role NOT NULL DEFAULT 'user',
+  role user_role NOT NULL DEFAULT 'client',
   position_actuelle position_gps DEFAULT NULL, -- Optionnel lors de l'inscription
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
@@ -65,7 +65,7 @@ BEGIN
     (NEW.raw_user_meta_data->>'nom'), 
     (NEW.raw_user_meta_data->>'prenom'),
     (NEW.raw_user_meta_data->>'tel'),
-    'user' -- Sécurité : force le rôle user par défaut
+    'client' -- Sécurité : force le rôle user par défaut
   );
   RETURN NEW;
 END;
@@ -84,17 +84,10 @@ CREATE TRIGGER on_auth_user_created
 
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
--- Chaque utilisateur gère ses propres données
-CREATE POLICY "L'utilisateur gère son propre profil"
-ON public.profiles FOR ALL
+-- Si l'ID de la ligne est ton ID d'authentification, tu fais ce que tu veux
+CREATE POLICY "L'utilisateur possède son profil"
+ON public.profiles
+FOR ALL -- Permet SELECT, INSERT, UPDATE, DELETE
 TO authenticated
 USING (auth.uid() = id)
 WITH CHECK (auth.uid() = id);
-
--- Les patrouilles ont le droit de voir tous les profils (pour les secours)
-CREATE POLICY "Les patrouilles voient tous les profils"
-ON public.profiles FOR SELECT
-TO authenticated
-USING (
-  (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'patrol'
-);
