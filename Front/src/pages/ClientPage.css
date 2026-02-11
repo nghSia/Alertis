@@ -1,0 +1,8 @@
+.client-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem;
+  background-color: #f7f9fb;
+  color: #1e293b;
+}

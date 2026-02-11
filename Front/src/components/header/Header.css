@@ -1,0 +1,15 @@
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background-color: rgb(30 41 59 / var(--tw-bg-opacity, 1));
+  color: white;
+}
+
+.navbar-logo {
+  font-size: 1.5rem;
+  font-weight: bold;
+  display: flex;
+  margin-left: 4.5rem;
+}
