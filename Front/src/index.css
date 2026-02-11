@@ -1,4 +1,6 @@
 :root {
+  width: 100%;
+  min-height: 100vh;
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
@@ -11,8 +13,6 @@
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
-  justify-content: center;
+  padding-top: 5rem;
   min-height: 100vh;
 }

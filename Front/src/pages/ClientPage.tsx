@@ -1,39 +1,42 @@
-import {
-  AlertButton,
-  SubCategoryButton,
-} from "../components/alertButton/SubCategoryButton";
+import { CategoryAccordion } from "../components/categoryAccordion/CategoryAccordion";
 
 export const ClientPage = () => {
   return (
     <div className="client-page">
-      <SubCategoryButton
-        label="Alert 1"
-        category="health"
-        subcategory="Malaise"
+      <div className="client-header">
+        <h1 className="client-title">Sélectionnez le type d'urgence</h1>
+        <p className="client-subtitle">
+          Choisissez la catégorie qui correspond à votre situation
+        </p>
+      </div>
+      <CategoryAccordion
+        categoryId="sante"
+        label="Santé"
+        subCategories={[
+          { id: "malaise", label: "Malaise" },
+          { id: "accident", label: "Accident" },
+          { id: "blessure", label: "Blessure" },
+        ]}
       />
 
-      <SubCategoryButton
-        label="Alert 1"
-        category="health"
-        subcategory="Accident"
+      <CategoryAccordion
+        categoryId="danger"
+        label="Danger"
+        subCategories={[
+          { id: "agression", label: "Agression" },
+          { id: "menace", label: "Menace" },
+          { id: "vol", label: "Vol" },
+        ]}
       />
 
-      <SubCategoryButton
-        label="Alert 1"
-        category="security"
-        subcategory="Agression"
-      />
-
-      <SubCategoryButton
-        label="Alert 1"
-        category="security"
-        subcategory="Accident"
-      />
-
-      <SubCategoryButton
-        label="Alert 1"
-        category="firefighting"
-        subcategory="Incendie"
+      <CategoryAccordion
+        categoryId="incendie"
+        label="Incendie"
+        subCategories={[
+          { id: "feu", label: "Feu" },
+          { id: "fumee", label: "Fumée" },
+          { id: "explosion", label: "Explosion" },
+        ]}
       />
     </div>
   );
