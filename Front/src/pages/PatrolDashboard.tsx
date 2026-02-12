@@ -5,8 +5,10 @@ import type { Alert as PatrolAlert } from '../services/PatrolService';
 import { MapPin, User, Calendar, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
 import './PatrolDashboard.css';
 
+/** Dashboard tab types */
 type TabType = 'pending' | 'accepted' | 'resolved';
 
+/** Alert data structure for patrol dashboard */
 export interface Alert {
   id: string;
   category: string;
@@ -21,12 +23,14 @@ export interface Alert {
   patrolName?: string;
 }
 
+/** Display labels for each patrol type */
 const PATROL_LABELS: Record<string, string> = {
   samu: 'SAMU',
   police: 'Police',
   firefighter: 'Pompiers'
 };
 
+/** Patrol dashboard - displays and manages alerts in real-time via WebSocket */
 const PatrolDashboard = () => {
   const [activeTab, setActiveTab] = useState<TabType>('pending');
   const [alerts, setAlerts] = useState<Alert[]>([]);
@@ -41,7 +45,6 @@ const PatrolDashboard = () => {
     setPatrolName(sessionStorage.getItem('username'));
   }, []);
 
-  // Charger les alertes de la DB quand patrolType est disponible
   useEffect(() => {
     if (!patrolType) {
       console.log('⏳ patrolType pas encore chargé');
@@ -55,7 +58,6 @@ const PatrolDashboard = () => {
         const acceptedAlerts = await getAlertsByStatus(patrolType, 'accepted');
         const resolvedAlerts = await getAlertsByStatus(patrolType, 'resolved');
 
-        // Transformer les alertes du format PatrolService au format local Alert
         const allAlerts = [...pendingAlerts, ...acceptedAlerts, ...resolvedAlerts].map((alert: PatrolAlert) => ({
           id: alert.id,
           category: alert.category_name,
@@ -80,13 +82,13 @@ const PatrolDashboard = () => {
     loadAlerts();
   }, [patrolType]);
 
-  // Écouter les nouvelles alertes entrant dans le canal
   useEffect(() => {
     console.log('📍 PatrolDashboard: Setup socket listeners...');
     console.log('📍 PatrolDashboard: patrolType =', patrolType);
 
     socketService.onNewAlert((alertData) => {
       console.log('🔔 Nouvelle alerte reçue:', alertData);
+
       const newAlert: Alert = {
         id: alertData.id,
         category: alertData.category,
@@ -98,6 +100,7 @@ const PatrolDashboard = () => {
         location: alertData.location,
         status: alertData.status as 'pending' | 'accepted' | 'resolved',
       };
+
       setAlerts(prev => [newAlert, ...prev]);
     });
 
@@ -124,16 +127,18 @@ const PatrolDashboard = () => {
       socketService.off('alert:accepted');
       socketService.off('alert:resolved');
     };
-  }, []);
+  }, [patrolType]);
 
-  // Filtrer les alertes selon l'onglet actif
   const filteredAlerts = alerts.filter(alert => alert.status === activeTab);
 
-  // Compter les alertes par statut
   const pendingCount = alerts.filter(alert => alert.status === 'pending').length;
   const acceptedCount = alerts.filter(alert => alert.status === 'accepted').length;
   const resolvedCount = alerts.filter(alert => alert.status === 'resolved').length;
 
+  /**
+   * Handle accept alert
+   * @param alert - L'alerte à accepter
+   */
   const handleAcceptAlert = (alert: Alert) => {
     const success = socketService.acceptAlert(alert.id, patrolType || 'police');
     if (!success) {
@@ -141,6 +146,7 @@ const PatrolDashboard = () => {
     }
   };
 
+  /** Mark an alert as resolved and notify server via WebSocket */
   const handleResolveAlert = (alert: Alert) => {
     const success = socketService.resolveAlert(alert.id, patrolType || 'police');
     if (!success) {

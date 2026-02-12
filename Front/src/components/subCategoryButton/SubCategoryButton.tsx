@@ -59,15 +59,15 @@ export function SubCategoryButton({
 
     console.log("Sending alert data:", alertData);
 
-    const success = sendEmergencyAlert(alertData);
+    const alertId = await sendEmergencyAlert(alertData);
 
-    if (success) {
-      // Rediriger vers la page de statut de l'alerte
+    if (alertId) {
       navigate("/alert-status", {
         state: {
           categoryName,
           subcategoryName: label,
           timestamp: new Date().toISOString(),
+          alertId: alertId,
         },
       });
     } else {

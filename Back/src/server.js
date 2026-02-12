@@ -15,19 +15,21 @@ const io = new Server(httpServer, {
   },
 });
 
+
+const connectedClients = new Map();
+
+/**
+ * On Websocket connexion
+ */
 io.on("connection", (socket) => {
   console.log("A user connected");
   console.log("Socket ID:", socket.id);
 
-    // Événement d'authentification - Rejoindre la room appropriée
     socket.on("user:join", async (data) => {
-        // data contient : { userId, userType, patrolType? }
-        // userType: 'client' ou 'patrol'
-        // patrolType: 'samu' | 'police' | 'firefighter' (si userType === 'patrol')
-
         if (data.userType === 'client') {
             socket.join(`client:${data.userId}`);
-            console.log(`✅ Client ${data.userId} rejoint le canal client:${data.userId}`);
+            connectedClients.set(data.userId, socket.id);
+            console.log(`✅ Client ${data.userId} rejoint le canal client:${data.userId} (socket: ${socket.id})`);
         } else if (data.userType === 'patrol') {
             socket.join(`alerts:${data.patrolType}`);
             console.log(`✅ Patrouille ${data.patrolType} rejoint le canal alerts:${data.patrolType}`);
@@ -37,11 +39,9 @@ io.on("connection", (socket) => {
     socket.on("emergency:alert", async (data) => {
         const alertId = await saveAlertToDatabase(data);
         if (alertId) {
-            // 1. Déduire le type de patrouille à partir de la catégorie (en minuscule)
             const patrolType = CATEGORY_TO_PATROL_TYPE[data.category.toLowerCase()];
 
             if (patrolType) {
-                // 2. Émettre au canal de patrouille correspondant
                 io.to(`alerts:${patrolType}`).emit("alert:new", {
                     id: alertId,
                     category: data.category,
@@ -55,7 +55,6 @@ io.on("connection", (socket) => {
                 console.log(`🚨 Alerte envoyée au canal alerts:${patrolType}`);
             }
 
-            // 3. Confirmer au client sur son canal privé
             io.to(`client:${data.userId}`).emit("alert:created", {
                 alertId: alertId,
                 status: 'pending'
@@ -65,21 +64,30 @@ io.on("connection", (socket) => {
     });
 
     socket.on("emergency:accept", async (data) => {
-        // data: { alertId, patrolId, patrolType }
 
-        // 1. Mettre à jour la base de données
+        console.log(`🔴 emergency:accept reçu: alertId=${data.alertId}, patrolId=${data.patrolId}`);
+
         const alert = await updateAlertStatus(data.alertId, 'accepted', data.patrolId);
 
         if (alert) {
-            // 2. Notifier le client sur son canal privé
-            io.to(`client:${alert.client_id}`).emit("alert:accepted", {
-                alertId: data.alertId,
-                patrolType: data.patrolType,
-                patrolName: data.patrolName
-            });
-            console.log(`✅ Notification d'acceptation envoyée au client ${alert.client_id}`);
+            console.log(`✅ Alerte mise à jour dans la DB`);
 
-            // 3. Notifier les autres patrouilles du même canal
+            const clientSocketId = connectedClients.get(alert.client_id);
+            if (clientSocketId) {
+                io.to(clientSocketId).emit("alert:status-update", {
+                    alertId: data.alertId,
+                    status: 'in_progress'
+                });
+                io.to(clientSocketId).emit("alert:accepted", {
+                    alertId: data.alertId,
+                    patrolType: data.patrolType,
+                    patrolName: data.patrolName
+                });
+                console.log(`✅ Notification d'acceptation envoyée au client ${alert.client_id} (socket: ${clientSocketId})`);
+            } else {
+                console.warn(`⚠️ Client ${alert.client_id} pas trouvé dans connectedClients`);
+            }
+
             io.to(`alerts:${data.patrolType}`).emit("alert:accepted", {
                 alertId: data.alertId,
                 patrolId: data.patrolId,
@@ -87,23 +95,29 @@ io.on("connection", (socket) => {
                 status: 'accepted'
             });
             console.log(`✅ Alerte acceptée notifiée au canal alerts:${data.patrolType}`);
+        } else {
+            console.error(`❌ Erreur lors de la mise à jour de l'alerte ${data.alertId}`);
         }
     });
 
     socket.on("emergency:resolve", async (data) => {
-        // data: { alertId, patrolType }
-
-        // 1. Mettre à jour la base de données
         const alert = await updateAlertStatus(data.alertId, 'resolved', null);
 
         if (alert) {
-            // 2. Notifier le client sur son canal privé
-            io.to(`client:${alert.client_id}`).emit("alert:resolved", {
-                alertId: data.alertId
-            });
-            console.log(`✅ Notification de résolution envoyée au client ${alert.client_id}`);
+            const clientSocketId = connectedClients.get(alert.client_id);
+            if (clientSocketId) {
+                io.to(clientSocketId).emit("alert:status-update", {
+                    alertId: data.alertId,
+                    status: 'resolved'
+                });
+                io.to(clientSocketId).emit("alert:resolved", {
+                    alertId: data.alertId
+                });
+                console.log(`✅ Notification de résolution envoyée au client ${alert.client_id} (socket: ${clientSocketId})`);
+            } else {
+                console.warn(`⚠️ Client ${alert.client_id} pas trouvé dans connectedClients`);
+            }
 
-            // 3. Notifier les patrouilles du canal
             io.to(`alerts:${data.patrolType}`).emit("alert:resolved", {
                 alertId: data.alertId,
                 status: 'resolved'
@@ -113,15 +127,22 @@ io.on("connection", (socket) => {
     });
 });
 
-// Fonctions utilitaires
-
-// Mapping des catégories vers les types de patrouille
+/**
+ * Map patrol type
+ * @type {{sante: string, santé: string, danger: string, incendie: string}}
+ */
 const CATEGORY_TO_PATROL_TYPE = {
     'sante': 'samu',
+    'santé': 'samu',
     'danger': 'police',
     'incendie': 'firefighter'
 };
 
+/**
+ * Save alert to DB
+ * @param alertData
+ * @returns {Promise<*|null>}
+ */
 async function saveAlertToDatabase(alertData) {
     const { subcategory, location, timestamp, userId } = alertData;
     console.log("Received alert data:", alertData);
@@ -166,23 +187,33 @@ async function saveAlertToDatabase(alertData) {
     }
 }
 
+/**
+ * Update alert status
+ * @param alertId
+ * @param status
+ * @param patrolId
+ * @returns {Promise<ParseNodes<EatWhitespace<"*">> extends [infer Nodes, `${infer Remainder}`] ? (Nodes extends Ast.Node[] ? (EatWhitespace<Remainder> extends "" ? SimplifyDeep<Nodes> : ParserError<`Unexpected input: ${Remainder}`>) : ParserError<"Invalid nodes array structure">) : ParseNodes<EatWhitespace<"*">> extends [infer FirstNode, ...infer RestNodes] ? (FirstNode extends Ast.Node ? (RestNodes extends Ast.Node[] ? (ProcessNodeWithoutSchema<FirstNode> extends infer FieldResult ? (FieldResult extends Record<string, unknown> ? ProcessNodesWithoutSchema<RestNodes, {} & FieldResult> : FieldResult) : any) : any) : any) : Prettify<{}>|null>}
+ */
 async function updateAlertStatus(alertId, status, patrolId) {
     try {
+        const statusMap = {
+            'accepted': 'in_progress',
+            'pending': 'pending',
+            'resolved': 'resolved'
+        };
+
+        const dbStatus = statusMap[status] || status;
+
         const updateData = {
-            status: status,
+            status: dbStatus,
             updated_at: new Date().toISOString()
         };
 
         if (patrolId) {
             updateData.patrol_id = patrolId;
-            if (status === 'accepted') {
-                updateData.accepted_at = new Date().toISOString();
-            }
         }
 
-        if (status === 'resolved') {
-            updateData.resolved_at = new Date().toISOString();
-        }
+        console.log(`📝 Mise à jour alerte ${alertId}: status=${dbStatus}, patrol_id=${patrolId}`);
 
         const { data, error } = await supabase
             .from('alerts')
@@ -196,7 +227,7 @@ async function updateAlertStatus(alertId, status, patrolId) {
             return null;
         }
 
-        console.log("Alert status updated:", data);
+        console.log("✅ Alert status updated:", data);
         return data;
     } catch (error) {
         console.error("Erreur updateAlertStatus:", error);
