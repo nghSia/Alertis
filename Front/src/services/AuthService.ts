@@ -27,23 +27,40 @@ export const login = async (email: string, password: string) => {
     const userId = data.user.id;
 
     // 1. On vérifie si c'est une patrouille
-    const { data: patrol } = await supabase
+    const { data: patrol, error: patrolError } = await supabase
       .from("patrols")
-      .select("id")
+      .select("*")
       .eq("id", userId)
-      .single();
+      .maybeSingle();
 
-    if (patrol) return { user: data.user, role: "patrol" };
+    if (patrolError) {
+      console.error("Erreur lors de la recherche de patrouille:", patrolError);
+    }
+
+    if (patrol) {
+      localStorage.setItem("userId", userId);
+      localStorage.setItem("userRole", "patrol");
+      localStorage.setItem("username", patrol?.name_patrols); // Nom de la patrouille
+      return { user: data.user, role: "patrol" };
+    }
 
     // 2. Sinon on vérifie si c'est un client
-    const { data: client } = await supabase
+    const { data: client, error: clientError } = await supabase
       .from("clients")
-      .select("id")
+      .select("*")
       .eq("id", userId)
-      .single();
+      .maybeSingle();
 
-    if (client) return { user: data.user, role: "client" };
+    if (clientError) {
+      console.error("Erreur lors de la recherche de client:", clientError);
+    }
 
+    if (client) {
+      localStorage.setItem("userId", userId);
+      localStorage.setItem("userRole", "client");
+      localStorage.setItem("username", client?.first_name);
+      return { user: data.user, role: "client" };
+    }
     return { user: data.user, role: null };
   } catch (error: any) {
     if (error.message === "Invalid login credentials") {
@@ -99,3 +116,16 @@ export const register = async (formData: any) => {
   }
 };
 
+export const logout = async () => {
+  try {
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
+
+    // Nettoyage du localStorage
+    localStorage.removeItem("userId");
+    localStorage.removeItem("userRole");
+    localStorage.removeItem("username");
+  } catch (error: any) {
+    throw error;
+  }
+};

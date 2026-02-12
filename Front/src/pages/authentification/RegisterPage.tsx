@@ -83,24 +83,26 @@ export const RegisterPage = () => {
               }
             />
           </div>
-          <input
-            className="auth-input"
-            type="tel"
-            placeholder="Téléphone"
-            required
-            onChange={(e) =>
-              setFormData({ ...formData, phone: e.target.value })
-            }
-          />
-          <input
-            className="auth-input"
-            type="email"
-            placeholder="Email"
-            required
-            onChange={(e) =>
-              setFormData({ ...formData, email: e.target.value })
-            }
-          />
+          <div className="auth-input-group">
+            <input
+              className="auth-input"
+              type="tel"
+              placeholder="Téléphone"
+              required
+              onChange={(e) =>
+                setFormData({ ...formData, phone: e.target.value })
+              }
+            />
+            <input
+              className="auth-input"
+              type="email"
+              placeholder="Email"
+              required
+              onChange={(e) =>
+                setFormData({ ...formData, email: e.target.value })
+              }
+            />
+          </div>
           <div className="password-input-group">
             <input
               className="auth-input"
