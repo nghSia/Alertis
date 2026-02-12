@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./MyRequestsPage.css";
+import { supabase } from "../integrations/supabase/client";
+import { fetchCategoriesAndSubcategories } from "../services/CategoryService";
+import socketService from "../services/socket";
+
 
 type Request = {
   id: string;
@@ -15,35 +19,92 @@ export const MyRequestsPage = () => {
   const [requests, setRequests] = useState<Request[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Écoute des mises à jour de statut en temps réel via WebSocket
   useEffect(() => {
-    // TODO: Récupérer les demandes depuis l'API/Supabase
-    // Pour l'instant, données de démonstration
-    const mockRequests: Request[] = [
-      {
-        id: "1",
-        categoryName: "Santé",
-        subcategoryName: "Malaise",
-        timestamp: new Date(Date.now() - 3600000).toISOString(), // Il y a 1h
-        status: "pending",
-      },
-      {
-        id: "2",
-        categoryName: "Danger",
-        subcategoryName: "Agression",
-        timestamp: new Date(Date.now() - 86400000).toISOString(), // Il y a 1 jour
-        status: "completed",
-      },
-    ];
+    socketService.connect();
 
-    setTimeout(() => {
-      setRequests(mockRequests);
-      setIsLoading(false);
-    }, 500);
+    const handleStatusUpdate = (data: { alertId: string; status: string }) => {
+      console.log(`🔄 Mise à jour temps réel reçue pour l'alerte ${data.alertId}: ${data.status}`);
+      setRequests((prevRequests) =>
+        prevRequests.map((req) =>
+          req.id === data.alertId
+            ? { ...req, status: mapStatus(data.status) }
+            : req
+        )
+      );
+    };
+
+    socketService.onAlertStatusUpdate(handleStatusUpdate);
+
+    return () => {
+      socketService.off("alert:status-update");
+    };
+  }, []);
+
+  useEffect(() => {
+    // Fonction unique pour tout charger dans l'ordre
+
+
+    const loadAllData = async () => {
+      try {
+        const { subCategories: fetchedSubCategories } =
+          await fetchCategoriesAndSubcategories();
+
+        const alerts = await getRequestsbyUserId(sessionStorage.getItem("userId") || "")
+
+        console.log("🔍 Données récupérées:", { alerts, fetchedSubCategories });
+
+        const mappedRequests: Request[] = (alerts || []).map((item: any) => {
+          const sub = fetchedSubCategories.find((s) => String(s.id) === String(item.sub_category_id));
+
+          return {
+            id: item.id,
+            categoryName: sub?.category?.name || "Inconnue",
+            subcategoryName: sub?.name || "Inconnue",
+            timestamp: item.created_at,
+            status: mapStatus(item.status),
+          };
+        });
+
+        setRequests(mappedRequests);
+      } catch (error) {
+        console.error("Erreur lors du chargement des données:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadAllData();
   }, []);
 
   const handleBackHome = () => {
     navigate("/");
   };
+
+  async function getRequestsbyUserId(userId: string) {
+    const { data, error } = await supabase.from("alerts").select("*").eq("client_id", userId);
+    if (error) {
+      console.error("Erreur lors de la récupération des demandes :", error);
+      return [];
+    }
+
+    return data;
+  }
+
+  function mapStatus(status: string | null): "pending" | "accepted" | "completed" {
+    switch (status) {
+      case "assigned":
+      case "in_progress":
+        return "accepted";
+      case "resolved":
+        return "completed";
+      case "pending":
+      case "cancelled":
+      default:
+        return "pending";
+    }
+  }
+
 
   const getStatusLabel = (status: string) => {
     switch (status) {
