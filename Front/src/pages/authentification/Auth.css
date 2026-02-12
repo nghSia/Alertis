@@ -63,6 +63,13 @@
 .auth-input-group {
   display: flex;
   gap: 1rem;
+  width: 100%;
+}
+
+.auth-input-group .auth-input {
+  flex: 1;
+  min-width: 0;
+  width: auto;
 }
 
 .auth-input {

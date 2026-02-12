@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "../integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { logout as authLogout } from "../services/AuthService";
 
 interface AuthContextType {
   user: any | null;
@@ -60,8 +61,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   });
 
   const signOut = async () => {
-    await supabase.auth.signOut();
-    queryClient.clear(); // Vide tout le cache pour la sécurité
+    await authLogout();
+    queryClient.clear();
   };
 
   return (

@@ -35,14 +35,16 @@ export const LoginPage = () => {
         )}
 
         <form onSubmit={handleLogin} className="auth-form">
-          <input
-            className="auth-input"
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
+          <div className="auth-input-group">
+            <input
+              className="auth-input"
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
           <div className="password-input-group">
             <input
               className="auth-input"
