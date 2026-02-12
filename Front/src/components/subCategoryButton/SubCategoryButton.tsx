@@ -52,6 +52,8 @@ export function SubCategoryButton({
       userId: localStorage.getItem("userId") || undefined,
     };
 
+    console.log("Sending alert data:", alertData);
+
     const success = sendEmergencyAlert(alertData);
 
     if (success) {
