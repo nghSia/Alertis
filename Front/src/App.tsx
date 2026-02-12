@@ -31,7 +31,7 @@ function AppContent() {
         <Route
           path="/"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={["client"]}>
               <ClientPage />
             </ProtectedRoute>
           }
@@ -41,7 +41,7 @@ function AppContent() {
         <Route
           path="/alert-status"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={["client"]}>
               <AlertStatusPage />
             </ProtectedRoute>
           }
@@ -51,7 +51,7 @@ function AppContent() {
         <Route
           path="/my-requests"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={["client"]}>
               <MyRequestsPage />
             </ProtectedRoute>
           }
@@ -61,7 +61,7 @@ function AppContent() {
         <Route
           path="/patrol"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={["patrol"]}>
               <PatrolDashboard />
             </ProtectedRoute>
           }

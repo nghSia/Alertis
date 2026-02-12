@@ -1,4 +1,5 @@
 import { io, Socket } from "socket.io-client";
+import { getAccessToken } from "./AuthService";
 
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:3000";
 
@@ -30,26 +31,30 @@ class SocketService {
     return this.socket;
   }
 
-    /**
-     * Join chanel
-     * @private
-     */
-  private joinUserChannel() {
-    const userId = sessionStorage.getItem('userId');
-    const userRole = sessionStorage.getItem('userRole');
-    const patrolType = sessionStorage.getItem('patrolType');
+  /**
+   * Join chanel
+   * @private
+   */
+  private async joinUserChannel() {
+    const token = await getAccessToken();
+    const userRole = sessionStorage.getItem("userRole");
+    const patrolType = sessionStorage.getItem("patrolType");
 
-    if (userId && this.socket) {
+    if (!token) {
+      console.warn("⚠️ joinUserChannel annulé : Token non disponible.");
+      return;
+    }
+
+    if (token && this.socket) {
       const userData = {
-        userId,
+        token,
         userType: userRole,
-        patrolType: userRole === 'patrol' ? patrolType : undefined
+        patrolType: userRole === "patrol" ? patrolType : undefined,
       };
 
-      this.socket.emit('user:join', userData);
+      this.socket.emit("user:join", userData);
     }
   }
-
 
   disconnect() {
     if (this.socket) {
@@ -58,13 +63,14 @@ class SocketService {
     }
   }
 
-  sendEmergencyAlert(data: {
+  async sendEmergencyAlert(data: {
     category: string;
     subcategory: string;
     timestamp: string;
     location?: { latitude: number; longitude: number };
-    userId?: string;
   }): Promise<string | false> {
+    const tokenForClient = await getAccessToken();
+
     return new Promise((resolve) => {
       if (!this.socket || !this.socket.connected) {
         console.error("❌ Socket non connecté. Impossible d'envoyer l'alerte.");
@@ -72,37 +78,49 @@ class SocketService {
         return;
       }
 
-      const clientFirstName = sessionStorage.getItem('userFirstName');
-      const clientLastName = sessionStorage.getItem('userLastName');
+      const clientFirstName = sessionStorage.getItem("userFirstName");
+      const clientLastName = sessionStorage.getItem("userLastName");
 
       const alertData = {
-        ...data,
-        clientName: `${clientFirstName} ${clientLastName}`
+        category: data.category,
+        subcategory: data.subcategory,
+        location: data.location,
+        timestamp: data.timestamp,
+        clientName: `${clientFirstName} ${clientLastName}`,
+        tokenForClient,
       };
 
-      const handleAlertCreated = (response: { alertId: string; status: string }) => {
+      const handleAlertCreated = (response: {
+        alertId: string;
+        status: string;
+      }) => {
         console.log("✅ Alerte créée avec ID:", response.alertId);
         resolve(response.alertId);
       };
 
-      this.socket.off('alert:created');
-      this.socket.once('alert:created', handleAlertCreated);
+      this.socket.off("alert:created");
+      this.socket.once("alert:created", handleAlertCreated);
 
       this.socket.emit("emergency:alert", alertData);
       console.log("🚨 Alerte d'urgence envoyée:", alertData);
     });
   }
 
-  acceptAlert(alertId: string, patrolType: string) {
+  async acceptAlert(alertId: string, patrolType: string) {
     if (this.socket && this.socket.connected) {
-      const patrolId = sessionStorage.getItem('userId');
-      const patrolName = sessionStorage.getItem('username');
+      const tokenForPatrol = await getAccessToken();
+      const patrolName = sessionStorage.getItem("username");
 
-      this.socket.emit('emergency:accept', {
+      if (!tokenForPatrol) {
+        console.error("❌ Impossible d'accepter l'alerte : Session expirée");
+        return false;
+      }
+
+      this.socket.emit("emergency:accept", {
         alertId,
-        patrolId,
+        tokenForPatrol,
         patrolType,
-        patrolName
+        patrolName,
       });
       console.log("✅ Alerte acceptée:", alertId);
       return true;
@@ -114,10 +132,9 @@ class SocketService {
 
   resolveAlert(alertId: string, patrolType: string) {
     if (this.socket && this.socket.connected) {
-
-      this.socket.emit('emergency:resolve', {
+      this.socket.emit("emergency:resolve", {
         alertId,
-        patrolType
+        patrolType,
       });
       console.log("✅ Alerte résolue:", alertId);
       return true;
@@ -127,20 +144,40 @@ class SocketService {
     }
   }
 
-
-  onAlertAccepted(callback: (data: { alertId: string; patrolId: string; patrolType: string; patrolName: string; status?: string }) => void) {
+  onAlertAccepted(
+    callback: (data: {
+      alertId: string;
+      patrolId: string;
+      patrolType: string;
+      patrolName: string;
+      status?: string;
+    }) => void,
+  ) {
     if (this.socket) {
       this.socket.on("alert:accepted", callback);
     }
   }
 
-  onAlertResolved(callback: (data: { alertId: string; status?: string }) => void) {
+  onAlertResolved(
+    callback: (data: { alertId: string; status?: string }) => void,
+  ) {
     if (this.socket) {
       this.socket.on("alert:resolved", callback);
     }
   }
 
-  onNewAlert(callback: (data: { id: string; category: string; subcategory: string; location: { latitude: number; longitude: number }; timestamp: string; clientId: string; clientName: string; status: string }) => void) {
+  onNewAlert(
+    callback: (data: {
+      id: string;
+      category: string;
+      subcategory: string;
+      location: { latitude: number; longitude: number };
+      timestamp: string;
+      clientId: string;
+      clientName: string;
+      status: string;
+    }) => void,
+  ) {
     if (this.socket) {
       this.socket.on("alert:new", (data) => {
         callback(data);
@@ -154,19 +191,23 @@ class SocketService {
     }
   }
 
-  onStatusUpdate(callback: (data: { alertId?: string; status?: string }) => void) {
+  onStatusUpdate(
+    callback: (data: { alertId?: string; status?: string }) => void,
+  ) {
     if (this.socket) {
       this.socket.on("emergency:status", callback);
     }
   }
 
-  onAlertStatusUpdate(callback: (data: { alertId: string; status: string }) => void) {
+  onAlertStatusUpdate(
+    callback: (data: { alertId: string; status: string }) => void,
+  ) {
     if (!this.socket) return;
 
-    console.log('🔌 onAlertStatusUpdate: Enregistrement du listener');
+    console.log("🔌 onAlertStatusUpdate: Enregistrement du listener");
 
     const listener = (data: { alertId: string; status: string }) => {
-      console.log('🔌 onAlertStatusUpdate: Événement reçu!', data);
+      console.log("🔌 onAlertStatusUpdate: Événement reçu!", data);
       callback(data);
     };
 

@@ -6,6 +6,7 @@ import { logout as authLogout } from "../services/AuthService";
 interface AuthContextType {
   user: any | null;
   profile: any | null;
+  role: "client" | "patrol" | null;
   loading: boolean;
   signOut: () => Promise<void>;
 }
@@ -22,10 +23,10 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<any | null>(null);
+  const [role, setRole] = useState<"client" | "patrol" | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const queryClient = useQueryClient();
 
-  // Gestion de la session Supabase
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
@@ -37,25 +38,39 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
       if (!session) {
-        queryClient.setQueryData(["profile"], null); // Nettoie le cache au logout
+        setRole(null);
+        queryClient.setQueryData(["profile"], null);
       }
     });
 
     return () => subscription.unsubscribe();
   }, [queryClient]);
 
-  // Récupération du profil avec TanStack Query
   const { data: profile, isLoading: profileLoading } = useQuery({
     queryKey: ["profile", user?.id],
     queryFn: async () => {
       if (!user) return null;
-      const { data, error } = await supabase
+
+      const { data: patrol } = await supabase
+        .from("patrols")
+        .select("*")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (patrol) {
+        setRole("patrol");
+        return patrol;
+      }
+
+      const { data: client, error } = await supabase
         .from("clients")
         .select("*")
         .eq("id", user.id)
         .single();
+
       if (error) throw error;
-      return data;
+      setRole("client");
+      return client;
     },
     enabled: !!user,
   });
@@ -67,7 +82,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <AuthContext.Provider
-      value={{ user, profile, loading: authLoading || profileLoading, signOut }}
+      value={{
+        user,
+        profile,
+        role,
+        loading: authLoading || profileLoading,
+        signOut,
+      }}
     >
       {children}
     </AuthContext.Provider>

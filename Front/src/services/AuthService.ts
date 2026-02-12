@@ -16,6 +16,17 @@ export const isPasswordValid = (password: string) => {
   return Object.values(requirements).every(Boolean);
 };
 
+/**
+ * Récupère le jeton d'accès (JWT) actuel.
+ * Supabase gère le rafraîchissement automatique du token.
+ */
+export const getAccessToken = async () => {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  return session?.access_token || null;
+};
+
 export const login = async (email: string, password: string) => {
   try {
     const { data, error } = await supabase.auth.signInWithPassword({
@@ -34,9 +45,8 @@ export const login = async (email: string, password: string) => {
       .maybeSingle();
 
     if (patrol) {
-      sessionStorage.setItem("userId", userId);
       sessionStorage.setItem("userRole", "patrol");
-      sessionStorage.setItem("username", patrol?.name_patrols);
+      sessionStorage.setItem("username", patrol?.name_patrols ?? "");
       sessionStorage.setItem("patrolType", patrol?.type);
       return { user: data.user, role: "patrol" };
     }
@@ -49,11 +59,13 @@ export const login = async (email: string, password: string) => {
       .maybeSingle();
 
     if (client) {
-      sessionStorage.setItem("userId", userId);
       sessionStorage.setItem("userRole", "client");
       sessionStorage.setItem("userFirstName", client?.first_name);
       sessionStorage.setItem("userLastName", client?.last_name);
-      sessionStorage.setItem("username", `${client?.last_name} ${client?.first_name}`);
+      sessionStorage.setItem(
+        "username",
+        `${client?.last_name} ${client?.first_name}`,
+      );
       return { user: data.user, role: "client" };
     }
     return { user: data.user, role: null };
@@ -124,4 +136,3 @@ export const logout = async () => {
     throw error;
   }
 };
-

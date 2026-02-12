@@ -8,7 +8,7 @@ interface SocketContextType {
     timestamp: string;
     location?: { latitude: number; longitude: number };
     userId?: string;
-  }) => boolean;
+  }) => Promise<string | false>;
 }
 
 const SocketContext = createContext<SocketContextType | undefined>(undefined);
@@ -29,11 +29,9 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
   useEffect(() => {
     socketService.connect();
 
-    socketService.onAlertConfirmation(() => {
-    });
+    socketService.onAlertConfirmation(() => {});
 
-    socketService.onStatusUpdate(() => {
-    });
+    socketService.onStatusUpdate(() => {});
 
     return () => {
       socketService.off("emergency:confirmed");
