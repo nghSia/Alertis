@@ -80,14 +80,8 @@ class SocketService {
         clientName: `${clientFirstName} ${clientLastName}`
       };
 
-      const timeoutId = setTimeout(() => {
-        console.error("⏱️ Timeout: pas de réponse du serveur pour alert:created");
-        resolve(false);
-      }, 10000);
-
       const handleAlertCreated = (response: { alertId: string; status: string }) => {
         console.log("✅ Alerte créée avec ID:", response.alertId);
-        clearTimeout(timeoutId);
         resolve(response.alertId);
       };
 

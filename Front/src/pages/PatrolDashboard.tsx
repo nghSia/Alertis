@@ -70,31 +70,25 @@ const PatrolDashboard = () => {
 
     const loadAlerts = async () => {
       try {
-        const currentPatrolId = sessionStorage.getItem("userId");
-        const pendingAlerts = await getAlertsByStatus(patrolType, "pending");
-        const acceptedAlerts = await getAlertsByStatus(patrolType, "accepted");
-        const resolvedAlerts = await getAlertsByStatus(patrolType, "resolved");
+          const pendingAlerts = await getAlertsByStatus(patrolType, 'pending');
+          const acceptedAlerts = await getAlertsByStatus(patrolType, 'accepted');
+          const resolvedAlerts = await getAlertsByStatus(patrolType, 'resolved');
 
-        const allAlerts = [
-          ...pendingAlerts,
-          // Ne garder que les alertes acceptées/résolues par cette patrouille
-          ...acceptedAlerts.filter((a) => a.patrol_id === currentPatrolId),
-          ...resolvedAlerts.filter((a) => a.patrol_id === currentPatrolId),
-        ].map((alert: PatrolAlert) => ({
-          id: alert.id,
-          category: alert.category_name,
-          subcategory: alert.subcategory_name,
-          clientId: "",
-          clientName: `${alert.client_first_name} ${alert.client_last_name}`,
-          created_at: alert.created_at,
-          timestamp: alert.created_at,
-          location: {
-            latitude: alert.latitude || 0,
-            longitude: alert.longitude || 0,
-          },
-          status: alert.status as "pending" | "accepted" | "resolved",
-          patrolId: alert.patrol_id,
-        }));
+          const allAlerts = [...pendingAlerts, ...acceptedAlerts, ...resolvedAlerts].map((alert: PatrolAlert) => ({
+              id: alert.id,
+              category: alert.category_name,
+              subcategory: alert.subcategory_name,
+              clientId: "",
+              clientName: `${alert.client_first_name} ${alert.client_last_name}`,
+              created_at: alert.created_at,
+              timestamp: alert.created_at,
+              location: {
+                latitude: alert.latitude || 0,
+                longitude: alert.longitude || 0,
+              },
+              status: alert.status as "pending" | "accepted" | "resolved",
+              patrolId: alert.patrol_id,
+          }));
 
         setAlerts(allAlerts);
       } catch (error) {
