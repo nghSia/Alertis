@@ -1,0 +1,133 @@
+.alert-status-page {
+  min-height: calc(100vh - 80px);
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.alert-status-container {
+  width: 100%;
+  max-width: 900px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.alert-card {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border: 2px solid #f59e0b;
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 8px 24px rgba(245, 158, 11, 0.2);
+}
+
+.alert-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+}
+
+.alert-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #92400e;
+  margin: 0;
+}
+
+.alert-time {
+  background: #fbbf24;
+  color: #78350f;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.alert-info {
+  margin-bottom: 1.5rem;
+}
+
+.alert-category {
+  font-size: 1.25rem;
+  color: #1e3a8a;
+  font-weight: 600;
+  margin: 0;
+}
+
+.alert-status {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid #f59e0b;
+}
+
+.status-icon {
+  width: 24px;
+  height: 24px;
+  color: #92400e;
+}
+
+.status-text {
+  font-size: 1.125rem;
+  color: #92400e;
+  font-weight: 600;
+}
+
+.alert-message {
+  font-size: 1rem;
+  color: #4b5563;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.new-request-btn {
+  width: 100%;
+  background: #1f2937;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 1.25rem 2rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(31, 41, 55, 0.3);
+}
+
+.new-request-btn:hover {
+  background: #374151;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(31, 41, 55, 0.4);
+}
+
+.new-request-btn:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 768px) {
+  .alert-status-page {
+    padding: 1rem;
+  }
+
+  .alert-card {
+    padding: 1.5rem;
+  }
+
+  .alert-title {
+    font-size: 1.5rem;
+  }
+
+  .alert-category {
+    font-size: 1.125rem;
+  }
+
+  .new-request-btn {
+    font-size: 1rem;
+    padding: 1rem 1.5rem;
+  }
+}

@@ -1,27 +1,32 @@
 import "./SubCategoryButton.css";
 import { useSocket } from "../../contexts/SocketContext";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { ConfirmModal } from "../confirmModal/ConfirmModa";
 
 type SubCategoryButtonProps = {
   label: string;
   subcategory: string;
-  category: string;
+  categoryName: string;
 };
 
 export function SubCategoryButton({
   label,
   subcategory,
-  category,
+  categoryName,
 }: SubCategoryButtonProps) {
   const { sendEmergencyAlert } = useSocket();
   const [isSending, setIsSending] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const navigate = useNavigate();
+  const userId = localStorage.getItem("userId") || undefined;
 
   const handleAlertClick = async () => {
+    setIsModalOpen(false);
     setIsSending(true);
 
     // Récupérer la géolocalisation si disponible
     let location: { latitude: number; longitude: number } | undefined;
-    // console.log("localisation disponible:", location);
 
     try {
       if (navigator.geolocation) {
@@ -45,11 +50,11 @@ export function SubCategoryButton({
 
     // Envoyer l'alerte via Socket.IO
     const alertData = {
-      category,
+      category: categoryName,
       subcategory,
       timestamp: new Date().toISOString(),
       location,
-      userId: localStorage.getItem("userId") || undefined,
+      userId,
     };
 
     console.log("Sending alert data:", alertData);
@@ -57,25 +62,39 @@ export function SubCategoryButton({
     const success = sendEmergencyAlert(alertData);
 
     if (success) {
-      alert(
-        `🚨 Alerte envoyée !\n\nCatégorie: ${category}\nType: ${label}\n\nLes secours ont été notifiés.`,
-      );
+      // Rediriger vers la page de statut de l'alerte
+      navigate("/alert-status", {
+        state: {
+          categoryName,
+          subcategoryName: label,
+          timestamp: new Date().toISOString(),
+        },
+      });
     } else {
       alert(
         "❌ Erreur lors de l'envoi de l'alerte.\nVérifiez votre connexion et réessayez.",
       );
+      setIsSending(false);
     }
-
-    setIsSending(false);
   };
 
   return (
-    <button
-      className="sub-category-button"
-      onClick={handleAlertClick}
-      disabled={isSending}
-    >
-      {isSending ? "Envoi en cours..." : label}
-    </button>
+    <>
+      <button
+        className="sub-category-button"
+        onClick={() => setIsModalOpen(true)}
+        disabled={isSending}
+      >
+        {isSending ? "Envoi en cours..." : label}
+      </button>
+
+      <ConfirmModal
+        isOpen={isModalOpen}
+        categoryName={categoryName}
+        subcategoryName={label}
+        onConfirm={handleAlertClick}
+        onCancel={() => setIsModalOpen(false)}
+      />
+    </>
   );
 }
