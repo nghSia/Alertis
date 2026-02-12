@@ -18,7 +18,6 @@ export function SubCategoryButton({
   const [isSending, setIsSending] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
-  const userId = sessionStorage.getItem("userId") || undefined;
 
   const handleAlertClick = async () => {
     setIsModalOpen(false);
@@ -53,23 +52,30 @@ export function SubCategoryButton({
       subcategory: label,
       timestamp: new Date().toISOString(),
       location,
-      userId,
     };
 
     console.log("Sending alert data:", alertData);
 
-    const alertId = await sendEmergencyAlert(alertData);
+    try {
+      const alertId = await sendEmergencyAlert(alertData);
 
-    if (alertId) {
-      navigate("/alert-status", {
-        state: {
-          categoryName,
-          subcategoryName: label,
-          timestamp: new Date().toISOString(),
-          alertId: alertId,
-        },
-      });
-    } else {
+      if (alertId) {
+        navigate("/alert-status", {
+          state: {
+            categoryName,
+            subcategoryName: label,
+            timestamp: new Date().toISOString(),
+            alertId: alertId,
+          },
+        });
+      } else {
+        alert(
+          "❌ Erreur lors de l'envoi de l'alerte.\nVérifiez votre connexion et réessayez.",
+        );
+        setIsSending(false);
+      }
+    } catch (error) {
+      console.error("Erreur lors de l'envoi de l'alerte:", error);
       alert(
         "❌ Erreur lors de l'envoi de l'alerte.\nVérifiez votre connexion et réessayez.",
       );
