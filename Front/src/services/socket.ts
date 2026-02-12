@@ -16,6 +16,8 @@ class SocketService {
 
       this.socket.on("connect", () => {
         console.log("✅ Connecté au serveur Socket.IO");
+        // Joindre le canal approprié après la connexion
+        this.joinUserChannel();
       });
 
       this.socket.on("disconnect", (reason) => {
@@ -27,6 +29,23 @@ class SocketService {
       });
     }
     return this.socket;
+  }
+
+  private joinUserChannel() {
+    const userId = sessionStorage.getItem('userId');
+    const userRole = sessionStorage.getItem('userRole');
+    const patrolType = sessionStorage.getItem('patrolType') || 'police'; // Type pour les canaux: police, samu, firefighter
+
+    if (userId && this.socket) {
+      const userData = {
+        userId,
+        userType: userRole,
+        patrolType: userRole === 'patrol' ? patrolType : undefined
+      };
+
+      this.socket.emit('user:join', userData);
+      console.log("👤 Utilisateur rejoint le canal:", userData);
+    }
   }
 
   disconnect() {
@@ -48,8 +67,16 @@ class SocketService {
     userId?: string;
   }) {
     if (this.socket && this.socket.connected) {
-      this.socket.emit("emergency:alert", data);
-      console.log("🚨 Alerte d'urgence envoyée:", data);
+      const clientFirstName = sessionStorage.getItem('userFirstName');
+      const clientLastName = sessionStorage.getItem('userLastName');
+
+      const alertData = {
+        ...data,
+        clientName: `${clientFirstName} ${clientLastName}`
+      };
+
+      this.socket.emit("emergency:alert", alertData);
+      console.log("🚨 Alerte d'urgence envoyée:", alertData);
       return true;
     } else {
       console.error("❌ Socket non connecté. Impossible d'envoyer l'alerte.");
@@ -57,13 +84,79 @@ class SocketService {
     }
   }
 
-  onAlertConfirmation(callback: (data: any) => void) {
+  // Patrouille accepte une alerte
+  acceptAlert(alertId: string, patrolType: string) {
+    if (this.socket && this.socket.connected) {
+      const patrolId = sessionStorage.getItem('userId');
+      const patrolName = sessionStorage.getItem('username'); // Nom pour l'affichage
+
+      this.socket.emit('emergency:accept', {
+        alertId,
+        patrolId,
+        patrolType, // Type pour les canaux: police, samu, firefighter
+        patrolName
+      });
+      console.log("✅ Alerte acceptée:", alertId);
+      return true;
+    } else {
+      console.error("❌ Socket non connecté. Impossible d'accepter l'alerte.");
+      return false;
+    }
+  }
+
+  // Patrouille résout une alerte
+  resolveAlert(alertId: string, patrolType: string) {
+    if (this.socket && this.socket.connected) {
+
+      this.socket.emit('emergency:resolve', {
+        alertId,
+        patrolType
+      });
+      console.log("✅ Alerte résolue:", alertId);
+      return true;
+    } else {
+      console.error("❌ Socket non connecté. Impossible de résoudre l'alerte.");
+      return false;
+    }
+  }
+
+  // Écouteurs pour les mises à jour
+
+  onAlertCreated(callback: (data: { alertId: string; status: string }) => void) {
+    if (this.socket) {
+      this.socket.on("alert:created", callback);
+    }
+  }
+
+  onAlertAccepted(callback: (data: { alertId: string; patrolId: string; patrolType: string; patrolName: string; status?: string }) => void) {
+    if (this.socket) {
+      this.socket.on("alert:accepted", callback);
+    }
+  }
+
+  onAlertResolved(callback: (data: { alertId: string; status?: string }) => void) {
+    if (this.socket) {
+      this.socket.on("alert:resolved", callback);
+    }
+  }
+
+  onNewAlert(callback: (data: { id: string; category: string; subcategory: string; location: { latitude: number; longitude: number }; timestamp: string; clientId: string; clientName: string; status: string }) => void) {
+    if (this.socket) {
+      console.log('🔌 onNewAlert: Écoute de "alert:new"...');
+      this.socket.on("alert:new", (data) => {
+        console.log('🔌 onNewAlert: Événement reçu!', data);
+        callback(data);
+      });
+    }
+  }
+
+  onAlertConfirmation(callback: (data: { alertId?: string }) => void) {
     if (this.socket) {
       this.socket.on("emergency:confirmed", callback);
     }
   }
 
-  onStatusUpdate(callback: (data: any) => void) {
+  onStatusUpdate(callback: (data: { alertId?: string; status?: string }) => void) {
     if (this.socket) {
       this.socket.on("emergency:status", callback);
     }

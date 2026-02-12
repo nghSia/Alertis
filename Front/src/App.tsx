@@ -11,6 +11,7 @@ import { AlertStatusPage } from "./pages/AlertStatusPage";
 import { MyRequestsPage } from "./pages/MyRequestsPage";
 import { LoginPage } from "./pages/authentification/LoginPage";
 import { RegisterPage } from "./pages/authentification/RegisterPage";
+import PatrolDashboard from "./pages/PatrolDashboard";
 import { ProtectedRoute } from "./components/routes/ProtectedRoute";
 import "./App.css";
 
@@ -56,12 +57,12 @@ function AppContent() {
           }
         />
 
-        {/* Route pour la Patrouille (plus tard) */}
+        {/* Route pour la Patrouille */}
         <Route
           path="/patrol"
           element={
             <ProtectedRoute requiredRole="patrol">
-              <div>Page Patrouille en construction...</div>
+              <PatrolDashboard />
             </ProtectedRoute>
           }
         />

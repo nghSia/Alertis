@@ -38,9 +38,10 @@ export const login = async (email: string, password: string) => {
     }
 
     if (patrol) {
-      localStorage.setItem("userId", userId);
-      localStorage.setItem("userRole", "patrol");
-      localStorage.setItem("username", patrol?.name_patrols); // Nom de la patrouille
+      sessionStorage.setItem("userId", userId);
+      sessionStorage.setItem("userRole", "patrol");
+      sessionStorage.setItem("username", patrol?.name_patrols);
+      sessionStorage.setItem("patrolType", patrol?.type);
       return { user: data.user, role: "patrol" };
     }
 
@@ -56,9 +57,11 @@ export const login = async (email: string, password: string) => {
     }
 
     if (client) {
-      localStorage.setItem("userId", userId);
-      localStorage.setItem("userRole", "client");
-      localStorage.setItem("username", client?.first_name);
+      sessionStorage.setItem("userId", userId);
+      sessionStorage.setItem("userRole", "client");
+      sessionStorage.setItem("userFirstName", client?.first_name);
+      sessionStorage.setItem("userLastName", client?.last_name);
+      sessionStorage.setItem("username", `${client?.last_name} ${client?.first_name}`);
       return { user: data.user, role: "client" };
     }
     return { user: data.user, role: null };
@@ -121,11 +124,14 @@ export const logout = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
 
-    // Nettoyage du localStorage
-    localStorage.removeItem("userId");
-    localStorage.removeItem("userRole");
-    localStorage.removeItem("username");
+    sessionStorage.removeItem("userId");
+    sessionStorage.removeItem("userRole");
+    sessionStorage.removeItem("username");
+    sessionStorage.removeItem("patrolType");
+    sessionStorage.removeItem("userFirstName");
+    sessionStorage.removeItem("userLastName");
   } catch (error: any) {
     throw error;
   }
 };
+

@@ -19,7 +19,7 @@ export function SubCategoryButton({
   const [isSending, setIsSending] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
-  const userId = localStorage.getItem("userId") || undefined;
+  const userId = sessionStorage.getItem("userId") || undefined;
 
   const handleAlertClick = async () => {
     setIsModalOpen(false);
@@ -51,7 +51,7 @@ export function SubCategoryButton({
     // Envoyer l'alerte via Socket.IO
     const alertData = {
       category: categoryName,
-      subcategory,
+      subcategory: label,
       timestamp: new Date().toISOString(),
       location,
       userId,
