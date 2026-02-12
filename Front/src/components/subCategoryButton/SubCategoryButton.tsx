@@ -12,7 +12,6 @@ type SubCategoryButtonProps = {
 
 export function SubCategoryButton({
   label,
-  subcategory,
   categoryName,
 }: SubCategoryButtonProps) {
   const { sendEmergencyAlert } = useSocket();

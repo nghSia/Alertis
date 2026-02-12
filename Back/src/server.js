@@ -132,7 +132,6 @@ io.on("connection", (socket) => {
  * @type {{sante: string, santé: string, danger: string, incendie: string}}
  */
 const CATEGORY_TO_PATROL_TYPE = {
-    'sante': 'samu',
     'santé': 'samu',
     'danger': 'police',
     'incendie': 'firefighter'

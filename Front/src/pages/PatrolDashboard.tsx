@@ -47,13 +47,11 @@ const PatrolDashboard = () => {
 
   useEffect(() => {
     if (!patrolType) {
-      console.log('⏳ patrolType pas encore chargé');
       return;
     }
 
     const loadAlerts = async () => {
       try {
-        console.log('📥 Chargement des alertes pour patrolType:', patrolType);
         const pendingAlerts = await getAlertsByStatus(patrolType, 'pending');
         const acceptedAlerts = await getAlertsByStatus(patrolType, 'accepted');
         const resolvedAlerts = await getAlertsByStatus(patrolType, 'resolved');
@@ -72,9 +70,7 @@ const PatrolDashboard = () => {
         }));
 
         setAlerts(allAlerts);
-        console.log('✅ Alertes chargées de la DB:', allAlerts.length);
       } catch (error) {
-        console.error('Erreur lors du chargement des alertes:', error);
         setError('Impossible de charger les alertes');
       }
     };
@@ -83,12 +79,7 @@ const PatrolDashboard = () => {
   }, [patrolType]);
 
   useEffect(() => {
-    console.log('📍 PatrolDashboard: Setup socket listeners...');
-    console.log('📍 PatrolDashboard: patrolType =', patrolType);
-
     socketService.onNewAlert((alertData) => {
-      console.log('🔔 Nouvelle alerte reçue:', alertData);
-
       const newAlert: Alert = {
         id: alertData.id,
         category: alertData.category,
@@ -105,7 +96,6 @@ const PatrolDashboard = () => {
     });
 
     socketService.onAlertAccepted((data) => {
-      console.log('✅ Alerte acceptée:', data);
       setAlerts(prev => prev.map(alert =>
         alert.id === data.alertId
           ? { ...alert, status: 'accepted', patrolId: data.patrolId, patrolName: data.patrolName }
@@ -114,7 +104,6 @@ const PatrolDashboard = () => {
     });
 
     socketService.onAlertResolved((data) => {
-      console.log('✔️ Alerte résolue:', data);
       setAlerts(prev => prev.map(alert =>
         alert.id === data.alertId
           ? { ...alert, status: 'resolved' }

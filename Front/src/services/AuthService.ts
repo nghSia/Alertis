@@ -27,15 +27,11 @@ export const login = async (email: string, password: string) => {
     const userId = data.user.id;
 
     // 1. On vérifie si c'est une patrouille
-    const { data: patrol, error: patrolError } = await supabase
+    const { data: patrol } = await supabase
       .from("patrols")
       .select("*")
       .eq("id", userId)
       .maybeSingle();
-
-    if (patrolError) {
-      console.error("Erreur lors de la recherche de patrouille:", patrolError);
-    }
 
     if (patrol) {
       sessionStorage.setItem("userId", userId);
@@ -46,15 +42,11 @@ export const login = async (email: string, password: string) => {
     }
 
     // 2. Sinon on vérifie si c'est un client
-    const { data: client, error: clientError } = await supabase
+    const { data: client } = await supabase
       .from("clients")
       .select("*")
       .eq("id", userId)
       .maybeSingle();
-
-    if (clientError) {
-      console.error("Erreur lors de la recherche de client:", clientError);
-    }
 
     if (client) {
       sessionStorage.setItem("userId", userId);
@@ -94,8 +86,6 @@ export const register = async (formData: any) => {
   }
 
   try {
-    console.log("Registering user with email:", formData.email);
-    console.log("Form data:", formData);
     const { data, error } = await supabase.auth.signUp({
       email: formData.email,
       password: formData.password,

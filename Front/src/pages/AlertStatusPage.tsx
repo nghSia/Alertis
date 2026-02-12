@@ -31,8 +31,6 @@ export const AlertStatusPage = () => {
   const [status, setStatus] = useState<AlertStatus>('pending');
   const [currentTime, setCurrentTime] = useState<string>('');
 
-  console.log('🔄 AlertStatusPage RENDER - status actuel:', status);
-
   useEffect(() => {
     if (!alertData) {
       navigate("/", { replace: true });
@@ -45,13 +43,11 @@ export const AlertStatusPage = () => {
   }, [alertData, navigate]);
 
   useEffect(() => {
-    console.log('🔌 AlertStatusPage: Connexion Socket et inscription au canal client');
     const socket = socketService.connect();
 
     const userId = sessionStorage.getItem('userId');
 
     const onConnect = () => {
-      console.log(`✅ Socket connecté, inscription au canal client:${userId}`);
       socket?.emit('user:join', {
         userId: userId,
         userType: 'client'
