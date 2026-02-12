@@ -29,12 +29,10 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
   useEffect(() => {
     socketService.connect();
 
-    socketService.onAlertConfirmation((data) => {
-      console.log("✅ Alerte confirmée par le serveur:", data);
+    socketService.onAlertConfirmation(() => {
     });
 
-    socketService.onStatusUpdate((data) => {
-      console.log("📊 Mise à jour de statut:", data);
+    socketService.onStatusUpdate(() => {
     });
 
     return () => {

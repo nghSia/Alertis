@@ -27,38 +27,33 @@ export const login = async (email: string, password: string) => {
     const userId = data.user.id;
 
     // 1. On vérifie si c'est une patrouille
-    const { data: patrol, error: patrolError } = await supabase
+    const { data: patrol } = await supabase
       .from("patrols")
       .select("*")
       .eq("id", userId)
       .maybeSingle();
 
-    if (patrolError) {
-      console.error("Erreur lors de la recherche de patrouille:", patrolError);
-    }
-
     if (patrol) {
-      localStorage.setItem("userId", userId);
-      localStorage.setItem("userRole", "patrol");
-      localStorage.setItem("username", patrol?.name_patrols); // Nom de la patrouille
+      sessionStorage.setItem("userId", userId);
+      sessionStorage.setItem("userRole", "patrol");
+      sessionStorage.setItem("username", patrol?.name_patrols);
+      sessionStorage.setItem("patrolType", patrol?.type);
       return { user: data.user, role: "patrol" };
     }
 
     // 2. Sinon on vérifie si c'est un client
-    const { data: client, error: clientError } = await supabase
+    const { data: client } = await supabase
       .from("clients")
       .select("*")
       .eq("id", userId)
       .maybeSingle();
 
-    if (clientError) {
-      console.error("Erreur lors de la recherche de client:", clientError);
-    }
-
     if (client) {
-      localStorage.setItem("userId", userId);
-      localStorage.setItem("userRole", "client");
-      localStorage.setItem("username", client?.first_name);
+      sessionStorage.setItem("userId", userId);
+      sessionStorage.setItem("userRole", "client");
+      sessionStorage.setItem("userFirstName", client?.first_name);
+      sessionStorage.setItem("userLastName", client?.last_name);
+      sessionStorage.setItem("username", `${client?.last_name} ${client?.first_name}`);
       return { user: data.user, role: "client" };
     }
     return { user: data.user, role: null };
@@ -91,8 +86,6 @@ export const register = async (formData: any) => {
   }
 
   try {
-    console.log("Registering user with email:", formData.email);
-    console.log("Form data:", formData);
     const { data, error } = await supabase.auth.signUp({
       email: formData.email,
       password: formData.password,
@@ -121,11 +114,14 @@ export const logout = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
 
-    // Nettoyage du localStorage
-    localStorage.removeItem("userId");
-    localStorage.removeItem("userRole");
-    localStorage.removeItem("username");
+    sessionStorage.removeItem("userId");
+    sessionStorage.removeItem("userRole");
+    sessionStorage.removeItem("username");
+    sessionStorage.removeItem("patrolType");
+    sessionStorage.removeItem("userFirstName");
+    sessionStorage.removeItem("userLastName");
   } catch (error: any) {
     throw error;
   }
 };
+

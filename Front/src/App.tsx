@@ -11,6 +11,7 @@ import { AlertStatusPage } from "./pages/AlertStatusPage";
 import { MyRequestsPage } from "./pages/MyRequestsPage";
 import { LoginPage } from "./pages/authentification/LoginPage";
 import { RegisterPage } from "./pages/authentification/RegisterPage";
+import PatrolDashboard from "./pages/PatrolDashboard";
 import { ProtectedRoute } from "./components/routes/ProtectedRoute";
 import "./App.css";
 
@@ -30,7 +31,7 @@ function AppContent() {
         <Route
           path="/"
           element={
-            <ProtectedRoute requiredRole="client">
+            <ProtectedRoute>
               <ClientPage />
             </ProtectedRoute>
           }
@@ -40,7 +41,7 @@ function AppContent() {
         <Route
           path="/alert-status"
           element={
-            <ProtectedRoute requiredRole="client">
+            <ProtectedRoute>
               <AlertStatusPage />
             </ProtectedRoute>
           }
@@ -50,18 +51,18 @@ function AppContent() {
         <Route
           path="/my-requests"
           element={
-            <ProtectedRoute requiredRole="client">
+            <ProtectedRoute>
               <MyRequestsPage />
             </ProtectedRoute>
           }
         />
 
-        {/* Route pour la Patrouille (plus tard) */}
+        {/* Route pour la Patrouille */}
         <Route
           path="/patrol"
           element={
-            <ProtectedRoute requiredRole="patrol">
-              <div>Page Patrouille en construction...</div>
+            <ProtectedRoute>
+              <PatrolDashboard />
             </ProtectedRoute>
           }
         />
