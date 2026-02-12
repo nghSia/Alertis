@@ -192,7 +192,7 @@ async function saveAlertToDatabase(alertData) {
  * @param alertId
  * @param status
  * @param patrolId
- * @returns {Promise<ParseNodes<EatWhitespace<"*">> extends [infer Nodes, `${infer Remainder}`] ? (Nodes extends Ast.Node[] ? (EatWhitespace<Remainder> extends "" ? SimplifyDeep<Nodes> : ParserError<`Unexpected input: ${Remainder}`>) : ParserError<"Invalid nodes array structure">) : ParseNodes<EatWhitespace<"*">> extends [infer FirstNode, ...infer RestNodes] ? (FirstNode extends Ast.Node ? (RestNodes extends Ast.Node[] ? (ProcessNodeWithoutSchema<FirstNode> extends infer FieldResult ? (FieldResult extends Record<string, unknown> ? ProcessNodesWithoutSchema<RestNodes, {} & FieldResult> : FieldResult) : any) : any) : any) : Prettify<{}>|null>}
+ * @returns {Promise<ParseNodes<EatWhitespace<"*">>|null>}
  */
 async function updateAlertStatus(alertId, status, patrolId) {
     try {
