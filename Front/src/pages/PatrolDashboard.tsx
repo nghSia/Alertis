@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import socketService from '../services/socket';
+import { getAlertsByStatus } from '../services/PatrolService';
+import type { Alert as PatrolAlert } from '../services/PatrolService';
 import { MapPin, User, Calendar, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
 import './PatrolDashboard.css';
 
@@ -39,10 +41,44 @@ const PatrolDashboard = () => {
     setPatrolName(sessionStorage.getItem('username'));
   }, []);
 
-  // Initialiser Socket.io au montage
+  // Charger les alertes de la DB quand patrolType est disponible
   useEffect(() => {
-    socketService.connect();
-  }, []);
+    if (!patrolType) {
+      console.log('⏳ patrolType pas encore chargé');
+      return;
+    }
+
+    const loadAlerts = async () => {
+      try {
+        console.log('📥 Chargement des alertes pour patrolType:', patrolType);
+        const pendingAlerts = await getAlertsByStatus(patrolType, 'pending');
+        const acceptedAlerts = await getAlertsByStatus(patrolType, 'accepted');
+        const resolvedAlerts = await getAlertsByStatus(patrolType, 'resolved');
+
+        // Transformer les alertes du format PatrolService au format local Alert
+        const allAlerts = [...pendingAlerts, ...acceptedAlerts, ...resolvedAlerts].map((alert: PatrolAlert) => ({
+          id: alert.id,
+          category: alert.category_name,
+          subcategory: alert.subcategory_name,
+          clientId: '',
+          clientName: `${alert.client_first_name} ${alert.client_last_name}`,
+          created_at: alert.created_at,
+          timestamp: alert.created_at,
+          location: { latitude: alert.latitude || 0, longitude: alert.longitude || 0 },
+          status: alert.status as 'pending' | 'accepted' | 'resolved',
+          patrolId: alert.patrol_id,
+        }));
+
+        setAlerts(allAlerts);
+        console.log('✅ Alertes chargées de la DB:', allAlerts.length);
+      } catch (error) {
+        console.error('Erreur lors du chargement des alertes:', error);
+        setError('Impossible de charger les alertes');
+      }
+    };
+
+    loadAlerts();
+  }, [patrolType]);
 
   // Écouter les nouvelles alertes entrant dans le canal
   useEffect(() => {
@@ -93,6 +129,11 @@ const PatrolDashboard = () => {
   // Filtrer les alertes selon l'onglet actif
   const filteredAlerts = alerts.filter(alert => alert.status === activeTab);
 
+  // Compter les alertes par statut
+  const pendingCount = alerts.filter(alert => alert.status === 'pending').length;
+  const acceptedCount = alerts.filter(alert => alert.status === 'accepted').length;
+  const resolvedCount = alerts.filter(alert => alert.status === 'resolved').length;
+
   const handleAcceptAlert = (alert: Alert) => {
     const success = socketService.acceptAlert(alert.id, patrolType || 'police');
     if (!success) {
@@ -134,7 +175,7 @@ const PatrolDashboard = () => {
         >
           <AlertCircle size={20} />
           Nouvelles alertes
-          {filteredAlerts.length > 0 && <span className="badge">{filteredAlerts.length}</span>}
+          {pendingCount > 0 && <span className="badge">{pendingCount}</span>}
         </button>
         <button
           onClick={() => setActiveTab('accepted')}
@@ -142,7 +183,7 @@ const PatrolDashboard = () => {
         >
           <CheckCircle size={20} />
           Acceptées
-          {filteredAlerts.length > 0 && <span className="badge">{filteredAlerts.length}</span>}
+          {acceptedCount > 0 && <span className="badge">{acceptedCount}</span>}
         </button>
         <button
           onClick={() => setActiveTab('resolved')}
@@ -150,7 +191,7 @@ const PatrolDashboard = () => {
         >
           <CheckCircle size={20} />
           Résolues
-          {filteredAlerts.length > 0 && <span className="badge">{filteredAlerts.length}</span>}
+          {resolvedCount > 0 && <span className="badge">{resolvedCount}</span>}
         </button>
       </div>
 

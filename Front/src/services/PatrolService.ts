@@ -22,18 +22,27 @@ export const getAlertsByStatus = async (
   status: 'pending' | 'accepted' | 'resolved'
 ): Promise<Alert[]> => {
   try {
+    // Map les statuts du frontend aux statuts réels de la DB
+    const statusMap: Record<string, string> = {
+      'pending': 'pending',
+      'accepted': 'assigned', // accepted → assigned dans la DB
+      'resolved': 'resolved'
+    };
+
+    const dbStatus = statusMap[status] || status;
+
     const { data, error } = await supabase
       .from("alerts")
       .select(`
         *,
-        clients!inner(first_name, last_name),
-        sub_categories!inner(
+        clients(first_name, last_name),
+        sub_categories(
           name,
-          categories!inner(name, patrol_type)
+          categories(name, operator_type)
         )
       `)
-      .eq("sub_categories.categories.patrol_type", patrolType)
-      .eq("status", status)
+      .eq("sub_categories.categories.operator_type", patrolType)
+      .eq("status", dbStatus)
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -43,15 +52,15 @@ export const getAlertsByStatus = async (
 
     return data.map((alert: any) => ({
       id: alert.id,
-      category_name: alert.sub_categories.categories.name,
-      subcategory_name: alert.sub_categories.name,
-      client_first_name: alert.clients.first_name,
-      client_last_name: alert.clients.last_name,
+      category_name: alert.sub_categories?.categories?.name || '',
+      subcategory_name: alert.sub_categories?.name || '',
+      client_first_name: alert.clients?.first_name || '',
+      client_last_name: alert.clients?.last_name || '',
       created_at: alert.created_at,
-      latitude: parseFloat(alert.alert_location.split('(')[1].split(',')[0]),
-      longitude: parseFloat(alert.alert_location.split(',')[1].split(')')[0]),
-      status: alert.status,
-      patrol_id: alert.patrol_id
+      latitude: alert.alert_location?.lat || 0,
+      longitude: alert.alert_location?.lng || 0,
+      status: status as any, // Retourner le statut du frontend
+      patrol_id: alert.patrol_id || undefined,
     }));
   } catch (error) {
     console.error("Erreur getAlertsByStatus:", error);
