@@ -47,7 +47,6 @@ class SocketService {
       };
 
       this.socket.emit('user:join', userData);
-      console.log("👤 Utilisateur rejoint le canal:", userData);
     }
   }
 
@@ -149,9 +148,7 @@ class SocketService {
 
   onNewAlert(callback: (data: { id: string; category: string; subcategory: string; location: { latitude: number; longitude: number }; timestamp: string; clientId: string; clientName: string; status: string }) => void) {
     if (this.socket) {
-      console.log('🔌 onNewAlert: Écoute de "alert:new"...');
       this.socket.on("alert:new", (data) => {
-        console.log('🔌 onNewAlert: Événement reçu!', data);
         callback(data);
       });
     }
