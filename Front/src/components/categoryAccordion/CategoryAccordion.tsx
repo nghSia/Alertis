@@ -10,20 +10,26 @@ type SubCategory = {
 type Props = {
   categoryId: string;
   label: string;
+  icon: string;
+  color: string;
   subCategories: SubCategory[];
 };
 
-const getCategoryIcon = (categoryId: string) => {
-  switch (categoryId) {
-    case "sante":
+const getIconPath = (iconName: string) => {
+  switch (iconName) {
+    case "Heart":
       return (
         <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
       );
-    case "danger":
+    case "ShieldAlert":
       return (
-        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z M12 9v4 M12 17h.01"></path>
+        <>
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+          <path d="M12 8v4"></path>
+          <path d="M12 16h.01"></path>
+        </>
       );
-    case "incendie":
+    case "Flame":
       return (
         <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path>
       );
@@ -32,9 +38,24 @@ const getCategoryIcon = (categoryId: string) => {
   }
 };
 
+const getColorClass = (color: string) => {
+  switch (color) {
+    case "blue":
+      return "category-blue";
+    case "orange":
+      return "category-orange";
+    case "red":
+      return "category-red";
+    default:
+      return "category-blue";
+  }
+};
+
 export const CategoryAccordion = ({
   categoryId,
   label,
+  icon,
+  color,
   subCategories,
 }: Props) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -42,7 +63,7 @@ export const CategoryAccordion = ({
   return (
     <div className="category-accordion">
       <button
-        className={`category-header category-${categoryId}`}
+        className={`category-header ${getColorClass(color)}`}
         onClick={() => setIsOpen(!isOpen)}
       >
         <div className="category-header-content">
@@ -55,7 +76,7 @@ export const CategoryAccordion = ({
             strokeLinecap="round"
             strokeLinejoin="round"
           >
-            {getCategoryIcon(categoryId)}
+            {getIconPath(icon)}
           </svg>
           <span className="category-label">{label}</span>
         </div>
@@ -70,6 +91,7 @@ export const CategoryAccordion = ({
               label={sub.label}
               subcategory={sub.id}
               category={categoryId}
+              categoryName={label}
             />
           ))}
         </div>

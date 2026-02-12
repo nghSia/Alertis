@@ -21,32 +21,29 @@
   transition: all 0.3s ease;
 }
 
-/* Santé - Bleu */
-.category-sante {
+.category-blue {
   background: linear-gradient(135deg, #3b5bdb 0%, #4c6ef5 100%);
 }
 
-.category-sante:hover {
+.category-blue:hover {
   background: linear-gradient(135deg, #2f4bba 0%, #3b5edb 100%);
   box-shadow: 0 6px 16px rgba(59, 91, 219, 0.3);
 }
 
-/* Danger - Orange */
-.category-danger {
+.category-orange {
   background: linear-gradient(135deg, #e8590c 0%, #fd7e14 100%);
 }
 
-.category-danger:hover {
+.category-orange:hover {
   background: linear-gradient(135deg, #d6490a 0%, #e8690c 100%);
   box-shadow: 0 6px 16px rgba(232, 89, 12, 0.3);
 }
 
-/* Incendie - Rouge */
-.category-incendie {
+.category-red {
   background: linear-gradient(135deg, #c92a2a 0%, #e03131 100%);
 }
 
-.category-incendie:hover {
+.category-red:hover {
   background: linear-gradient(135deg, #b02525 0%, #c92a2a 100%);
   box-shadow: 0 6px 16px rgba(201, 42, 42, 0.3);
 }

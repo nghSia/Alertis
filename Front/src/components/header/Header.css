@@ -59,6 +59,33 @@
   white-space: nowrap;
 }
 
+.requests-button {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.9rem;
+  background-color: rgba(59, 130, 246, 0.9);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.requests-button:hover {
+  background-color: rgba(37, 99, 235, 1);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+.requests-button:active {
+  transform: translateY(0);
+}
+
 .logout-button {
   display: flex;
   align-items: center;
@@ -155,4 +182,3 @@
     padding: 0.35rem 0.6rem;
   }
 }
-

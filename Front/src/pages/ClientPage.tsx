@@ -1,6 +1,24 @@
 import { CategoryAccordion } from "../components/categoryAccordion/CategoryAccordion";
+import { useEffect, useState } from "react";
+import { fetchCategoriesAndSubcategories } from "../services/CategoryService";
+import type { Category, SubCategory } from "../services/CategoryService";
+import "./ClientPage.css";
 
 export const ClientPage = () => {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const { categories, subCategories } =
+        await fetchCategoriesAndSubcategories();
+      setCategories(categories);
+      setSubCategories(subCategories);
+    };
+
+    fetchData();
+  }, []);
+
   return (
     <div className="client-page">
       <div className="client-header">
@@ -9,35 +27,18 @@ export const ClientPage = () => {
           Choisissez la catégorie qui correspond à votre situation
         </p>
       </div>
-      <CategoryAccordion
-        categoryId="sante"
-        label="Santé"
-        subCategories={[
-          { id: "Malaise", label: "Malaise" },
-          { id: "Accident", label: "Accident" },
-          { id: "Blessure", label: "Blessure" },
-        ]}
-      />
-
-      <CategoryAccordion
-        categoryId="danger"
-        label="Danger"
-        subCategories={[
-          { id: "Agression", label: "Agression" },
-          { id: "Menace", label: "Menace" },
-          { id: "Vol", label: "Vol" },
-        ]}
-      />
-
-      <CategoryAccordion
-        categoryId="incendie"
-        label="Incendie"
-        subCategories={[
-          { id: "Feu", label: "Feu" },
-          { id: "Fumée", label: "Fumée" },
-          { id: "Explosion", label: "Explosion" },
-        ]}
-      />
+      {categories.map((category) => (
+        <CategoryAccordion
+          key={category.id}
+          categoryId={category.id}
+          label={category.name}
+          icon={category.icon}
+          color={category.color}
+          subCategories={subCategories
+            .filter((sub) => String(sub.category.id) === String(category.id))
+            .map((sub) => ({ id: sub.id, label: sub.name }))}
+        />
+      ))}
     </div>
   );
 };

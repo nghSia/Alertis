@@ -7,6 +7,8 @@ import {
 } from "react-router-dom";
 import { Header } from "./components/header/Header";
 import { ClientPage } from "./pages/ClientPage";
+import { AlertStatusPage } from "./pages/AlertStatusPage";
+import { MyRequestsPage } from "./pages/MyRequestsPage";
 import { LoginPage } from "./pages/authentification/LoginPage";
 import { RegisterPage } from "./pages/authentification/RegisterPage";
 import { ProtectedRoute } from "./components/routes/ProtectedRoute";
@@ -30,6 +32,26 @@ function AppContent() {
           element={
             <ProtectedRoute requiredRole="client">
               <ClientPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Route pour le statut de l'alerte */}
+        <Route
+          path="/alert-status"
+          element={
+            <ProtectedRoute requiredRole="client">
+              <AlertStatusPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Route pour les demandes de l'utilisateur */}
+        <Route
+          path="/my-requests"
+          element={
+            <ProtectedRoute requiredRole="client">
+              <MyRequestsPage />
             </ProtectedRoute>
           }
         />
