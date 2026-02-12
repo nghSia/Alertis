@@ -49,7 +49,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     queryFn: async () => {
       if (!user) return null;
       const { data, error } = await supabase
-        .from("profiles")
+        .from("clients")
         .select("*")
         .eq("id", user.id)
         .single();

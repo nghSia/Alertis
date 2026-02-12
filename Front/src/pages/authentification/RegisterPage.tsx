@@ -8,9 +8,9 @@ export const RegisterPage = () => {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
-    nom: "",
-    prenom: "",
-    tel: "",
+    lastName: "",
+    firstName: "",
+    phone: "",
   });
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
@@ -71,7 +71,7 @@ export const RegisterPage = () => {
               placeholder="Prénom"
               required
               onChange={(e) =>
-                setFormData({ ...formData, prenom: e.target.value })
+                setFormData({ ...formData, firstName: e.target.value })
               }
             />
             <input
@@ -79,7 +79,7 @@ export const RegisterPage = () => {
               placeholder="Nom"
               required
               onChange={(e) =>
-                setFormData({ ...formData, nom: e.target.value })
+                setFormData({ ...formData, lastName: e.target.value })
               }
             />
           </div>
@@ -88,7 +88,9 @@ export const RegisterPage = () => {
             type="tel"
             placeholder="Téléphone"
             required
-            onChange={(e) => setFormData({ ...formData, tel: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, phone: e.target.value })
+            }
           />
           <input
             className="auth-input"

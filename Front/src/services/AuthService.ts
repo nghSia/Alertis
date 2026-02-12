@@ -24,14 +24,27 @@ export const login = async (email: string, password: string) => {
     });
     if (error) throw error;
 
-    const { data: profile, error: profileError } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", data.user.id)
+    const userId = data.user.id;
+
+    // 1. On vérifie si c'est une patrouille
+    const { data: patrol } = await supabase
+      .from("patrols")
+      .select("id")
+      .eq("id", userId)
       .single();
 
-    if (profileError) throw profileError;
-    return { user: data.user, role: profile?.role };
+    if (patrol) return { user: data.user, role: "patrol" };
+
+    // 2. Sinon on vérifie si c'est un client
+    const { data: client } = await supabase
+      .from("clients")
+      .select("id")
+      .eq("id", userId)
+      .single();
+
+    if (client) return { user: data.user, role: "client" };
+
+    return { user: data.user, role: null };
   } catch (error: any) {
     if (error.message === "Invalid login credentials") {
       throw new Error("Email ou mot de passe incorrect.");
@@ -41,7 +54,7 @@ export const login = async (email: string, password: string) => {
 };
 
 export const register = async (formData: any) => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const emailRegex = /^[^\s@]+@[^\s@]+.[^\s@]+$/;
   if (!emailRegex.test(formData.email)) {
     throw new Error(
       "Veuillez entrer une adresse email valide (ex: nom@domaine.com).",
@@ -61,15 +74,17 @@ export const register = async (formData: any) => {
   }
 
   try {
+    console.log("Registering user with email:", formData.email);
+    console.log("Form data:", formData);
     const { data, error } = await supabase.auth.signUp({
       email: formData.email,
       password: formData.password,
       options: {
         data: {
-          nom: formData.nom,
-          prenom: formData.prenom,
-          tel: formData.tel,
-          role: "client",
+          email: formData.email,
+          lastName: formData.lastName,
+          firstName: formData.firstName,
+          phone: formData.phone,
         },
       },
     });
@@ -83,3 +98,4 @@ export const register = async (formData: any) => {
     throw error;
   }
 };
+

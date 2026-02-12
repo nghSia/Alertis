@@ -13,9 +13,9 @@ export const ClientPage = () => {
         categoryId="sante"
         label="Santé"
         subCategories={[
-          { id: "malaise", label: "Malaise" },
-          { id: "accident", label: "Accident" },
-          { id: "blessure", label: "Blessure" },
+          { id: "Malaise", label: "Malaise" },
+          { id: "Accident", label: "Accident" },
+          { id: "Blessure", label: "Blessure" },
         ]}
       />
 
@@ -23,9 +23,9 @@ export const ClientPage = () => {
         categoryId="danger"
         label="Danger"
         subCategories={[
-          { id: "agression", label: "Agression" },
-          { id: "menace", label: "Menace" },
-          { id: "vol", label: "Vol" },
+          { id: "Agression", label: "Agression" },
+          { id: "Menace", label: "Menace" },
+          { id: "Vol", label: "Vol" },
         ]}
       />
 
@@ -33,9 +33,9 @@ export const ClientPage = () => {
         categoryId="incendie"
         label="Incendie"
         subCategories={[
-          { id: "feu", label: "Feu" },
-          { id: "fumee", label: "Fumée" },
-          { id: "explosion", label: "Explosion" },
+          { id: "Feu", label: "Feu" },
+          { id: "Fumée", label: "Fumée" },
+          { id: "Explosion", label: "Explosion" },
         ]}
       />
     </div>
