@@ -1,6 +1,6 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
-import socketService from "../services/socket";
+import socketService from "../services/socketService.ts";
 import "./AlertStatusPage.css";
 
 type AlertData = {

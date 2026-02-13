@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import "./MyRequestsPage.css";
 import { supabase } from "../integrations/supabase/client";
 import { fetchCategoriesAndSubcategories } from "../services/CategoryService";
-import socketService from "../services/socket";
+import socketService from "../services/socketService.ts";
 import { useAuth } from "../contexts/AuthContext";
 
 
@@ -50,8 +50,6 @@ export const MyRequestsPage = () => {
           await fetchCategoriesAndSubcategories();
 
         const alerts = await getRequestsbyUserId(user?.id || "")
-
-        console.log("🔍 Données récupérées:", { alerts, fetchedSubCategories });
 
         const mappedRequests: Request[] = (alerts || []).map((item: any) => {
           const sub = fetchedSubCategories.find((s) => String(s.id) === String(item.sub_category_id));

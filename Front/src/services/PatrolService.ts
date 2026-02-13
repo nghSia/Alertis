@@ -49,9 +49,6 @@ export const getAlertsByStatus = async (
     const filteredData = data.filter((alert: any) => {
       const operatorType = alert.sub_categories?.categories?.operator_type;
       const match = operatorType === patrolType;
-      if (!match) {
-        console.log(`❌ Alerte ${alert.id} ignorée: operator_type=${operatorType} vs patrolType=${patrolType}`);
-      }
       return match;
     });
 
