@@ -22,8 +22,8 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [user, setUser] = useState<any | null>(null);
-  const [role, setRole] = useState<"client" | "patrol" | null>(null);
+  const  [user, setUser] = useState<any | null>(null);
+  const[role, setRole] = useState<"client" | "patrol" | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const queryClient = useQueryClient();
 

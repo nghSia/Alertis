@@ -178,9 +178,6 @@ io.on("connection", (socket) => {
             patrolName: data.patrolName,
             status: "accepted",
           });
-          console.log(
-            `✅ Alerte acceptée notifiée au canal alerts:${data.patrolType}`,
-          );
         } else {
           console.error(
             `❌ Erreur lors de la mise à jour de l'alerte ${data.alertId}`,
