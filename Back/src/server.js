@@ -81,7 +81,7 @@ io.on("connection", (socket) => {
 
   socket.on("emergency:alert", async (data) => {
     jwt.verify(
-      data.tokenForClient,
+      data.token,
       getKey,
       { algorithms: ["ES256"] },
       async (err, decoded) => {
@@ -128,7 +128,7 @@ io.on("connection", (socket) => {
 
   socket.on("emergency:accept", async (data) => {
     jwt.verify(
-      data.tokenForPatrol,
+      data.token,
       getKey,
       { algorithms: ["ES256"] },
       async (err, decoded) => {

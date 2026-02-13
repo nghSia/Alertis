@@ -12,11 +12,8 @@ import type { Alert as PatrolAlert } from "../services/PatrolService";
 import { getAlertsByStatus } from "../services/PatrolService";
 import socketService from "../services/socket";
 import { supabase } from "../integrations/supabase/client";
+import { useAuth } from "../contexts/AuthContext";
 import "./PatrolDashboard.css";
-import { MapContainer } from "react-leaflet/MapContainer";
-import { Marker } from "react-leaflet/Marker";
-import { Popup } from "react-leaflet/Popup";
-import { TileLayer } from "react-leaflet/TileLayer";
 
 /** Dashboard tab types */
 type TabType = "pending" | "accepted" | "resolved";
@@ -45,28 +42,27 @@ const PATROL_LABELS: Record<string, string> = {
 
 /** Patrol dashboard - displays and manages alerts in real-time via WebSocket */
 const PatrolDashboard = () => {
+  const { user, profile } = useAuth();
   const [activeTab, setActiveTab] = useState<TabType>("pending");
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [patrolId, setPatrolId] = useState<string | null>(null);
-  const [patrolType, setPatrolType] = useState<string | null>(null);
-  const [patrolName, setPatrolName] = useState<string | null>(null);
   const [patrolLocation, setPatrolLocation] = useState<{
     latitude: number;
     longitude: number;
   } | null>(null);
   const patrolWatchIdRef = useRef<number | null>(null);
 
-  useEffect(() => {
-    setPatrolId(sessionStorage.getItem("userId"));
-    setPatrolType(sessionStorage.getItem("patrolType"));
-    setPatrolName(sessionStorage.getItem("username"));
-  }, []);
+  const patrolId = user?.id || null;
+  const patrolType = profile?.type || null;
+  const patrolName = profile?.name_patrols || null;
 
   useEffect(() => {
     if (!patrolType) {
       return;
     }
+
+    socketService.connect();
+    socketService.joinChannel("patrol", patrolType);
 
     const loadAlerts = async () => {
       try {
@@ -118,8 +114,7 @@ const PatrolDashboard = () => {
 
     socketService.onAlertAccepted((data) => {
       setAlerts((prev) => {
-        // Si c'est notre patrouille qui a accepté, on met à jour le statut
-        if (data.patrolId === sessionStorage.getItem("userId")) {
+        if (data.patrolId === patrolId) {
           return prev.map((alert) =>
             alert.id === data.alertId
               ? {
@@ -246,7 +241,6 @@ const PatrolDashboard = () => {
   };
 
   useEffect(() => {
-    // Démarrer le suivi de localisation au chargement
     startPatrolLocationWatch();
 
     return () => {

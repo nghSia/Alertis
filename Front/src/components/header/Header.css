@@ -23,6 +23,24 @@
   flex-shrink: 0;
 }
 
+.navbar-logo button {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.25rem;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: opacity 0.2s ease;
+}
+
+.navbar-logo button:hover {
+  opacity: 0.8;
+}
+
 .user-status {
   display: flex;
   align-items: center;

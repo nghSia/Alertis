@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { LogOut, User, FileText } from "lucide-react";
 
 export function Header() {
-  const { user, signOut } = useAuth();
+  const { user, profile, role, signOut } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -16,18 +16,24 @@ export function Header() {
     }
   };
 
-  const username =
-    localStorage.getItem("username") || user?.email || "Utilisateur";
-  const userRole = localStorage.getItem("userRole");
+  const username = profile?.name_patrols
+    || (profile?.first_name && profile?.last_name ? `${profile.last_name} ${profile.first_name}` : null);
+  const userRole = role;
 
   const handleMyRequests = () => {
     navigate("/my-requests");
   };
 
+  const handleGoHome = () => {
+    navigate("/");
+  }
+
   return (
     <header className="navbar">
       <div className="navbar-logo">
-        <p>🚨 Alertis</p>
+        <button
+            onClick={handleGoHome}
+        >🚨 Alertis</button>
       </div>
 
       {user && (

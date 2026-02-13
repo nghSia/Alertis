@@ -1,6 +1,5 @@
 import { supabase } from "../integrations/supabase/client";
 
-// Validation des critères du mot de passe
 export const validatePassword = (password: string) => {
   return {
     minLength: password.length >= 6,
@@ -10,7 +9,6 @@ export const validatePassword = (password: string) => {
   };
 };
 
-// Vérifier si tous les critères du mot de passe sont validés
 export const isPasswordValid = (password: string) => {
   const requirements = validatePassword(password);
   return Object.values(requirements).every(Boolean);
@@ -45,9 +43,6 @@ export const login = async (email: string, password: string) => {
       .maybeSingle();
 
     if (patrol) {
-      sessionStorage.setItem("userRole", "patrol");
-      sessionStorage.setItem("username", patrol?.name_patrols ?? "");
-      sessionStorage.setItem("patrolType", patrol?.type);
       return { user: data.user, role: "patrol" };
     }
 
@@ -59,13 +54,6 @@ export const login = async (email: string, password: string) => {
       .maybeSingle();
 
     if (client) {
-      sessionStorage.setItem("userRole", "client");
-      sessionStorage.setItem("userFirstName", client?.first_name);
-      sessionStorage.setItem("userLastName", client?.last_name);
-      sessionStorage.setItem(
-        "username",
-        `${client?.last_name} ${client?.first_name}`,
-      );
       return { user: data.user, role: "client" };
     }
     return { user: data.user, role: null };
@@ -125,13 +113,6 @@ export const logout = async () => {
   try {
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
-
-    sessionStorage.removeItem("userId");
-    sessionStorage.removeItem("userRole");
-    sessionStorage.removeItem("username");
-    sessionStorage.removeItem("patrolType");
-    sessionStorage.removeItem("userFirstName");
-    sessionStorage.removeItem("userLastName");
   } catch (error: any) {
     throw error;
   }

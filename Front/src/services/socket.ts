@@ -17,7 +17,6 @@ class SocketService {
 
       this.socket.on("connect", () => {
         console.log("✅ Connecté au serveur Socket.IO");
-        this.joinUserChannel();
       });
 
       this.socket.on("disconnect", (reason) => {
@@ -32,24 +31,22 @@ class SocketService {
   }
 
   /**
-   * Join chanel
-   * @private
+   * Join channel
+   * @param userType
+   * @param patrolType
    */
-  private async joinUserChannel() {
+  async joinChannel(userType: "client" | "patrol", patrolType?: string) {
     const token = await getAccessToken();
-    const userRole = sessionStorage.getItem("userRole");
-    const patrolType = sessionStorage.getItem("patrolType");
 
     if (!token) {
-      console.warn("⚠️ joinUserChannel annulé : Token non disponible.");
       return;
     }
 
-    if (token && this.socket) {
+    if (this.socket) {
       const userData = {
         token,
-        userType: userRole,
-        patrolType: userRole === "patrol" ? patrolType : undefined,
+        userType,
+        patrolType: userType === "patrol" ? patrolType : undefined,
       };
 
       this.socket.emit("user:join", userData);
@@ -69,7 +66,7 @@ class SocketService {
     timestamp: string;
     location?: { latitude: number; longitude: number };
   }): Promise<string | false> {
-    const tokenForClient = await getAccessToken();
+    const token = await getAccessToken();
 
     return new Promise((resolve) => {
       if (!this.socket || !this.socket.connected) {
@@ -78,16 +75,12 @@ class SocketService {
         return;
       }
 
-      const clientFirstName = sessionStorage.getItem("userFirstName");
-      const clientLastName = sessionStorage.getItem("userLastName");
-
       const alertData = {
         category: data.category,
         subcategory: data.subcategory,
         location: data.location,
         timestamp: data.timestamp,
-        clientName: `${clientFirstName} ${clientLastName}`,
-        tokenForClient,
+        token,
       };
 
       const handleAlertCreated = (response: {
@@ -108,19 +101,17 @@ class SocketService {
 
   async acceptAlert(alertId: string, patrolType: string) {
     if (this.socket && this.socket.connected) {
-      const tokenForPatrol = await getAccessToken();
-      const patrolName = sessionStorage.getItem("username");
+      const token = await getAccessToken();
 
-      if (!tokenForPatrol) {
+      if (!token) {
         console.error("❌ Impossible d'accepter l'alerte : Session expirée");
         return false;
       }
 
       this.socket.emit("emergency:accept", {
         alertId,
-        tokenForPatrol,
+        token,
         patrolType,
-        patrolName,
       });
       console.log("✅ Alerte acceptée:", alertId);
       return true;

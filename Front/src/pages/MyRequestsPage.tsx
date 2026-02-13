@@ -4,6 +4,7 @@ import "./MyRequestsPage.css";
 import { supabase } from "../integrations/supabase/client";
 import { fetchCategoriesAndSubcategories } from "../services/CategoryService";
 import socketService from "../services/socket";
+import { useAuth } from "../contexts/AuthContext";
 
 
 type Request = {
@@ -16,12 +17,13 @@ type Request = {
 
 export const MyRequestsPage = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [requests, setRequests] = useState<Request[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Écoute des mises à jour de statut en temps réel via WebSocket
   useEffect(() => {
     socketService.connect();
+    socketService.joinChannel("client");
 
     const handleStatusUpdate = (data: { alertId: string; status: string }) => {
       console.log(`🔄 Mise à jour temps réel reçue pour l'alerte ${data.alertId}: ${data.status}`);
@@ -42,15 +44,12 @@ export const MyRequestsPage = () => {
   }, []);
 
   useEffect(() => {
-    // Fonction unique pour tout charger dans l'ordre
-
-
     const loadAllData = async () => {
       try {
         const { subCategories: fetchedSubCategories } =
           await fetchCategoriesAndSubcategories();
 
-        const alerts = await getRequestsbyUserId(sessionStorage.getItem("userId") || "")
+        const alerts = await getRequestsbyUserId(user?.id || "")
 
         console.log("🔍 Données récupérées:", { alerts, fetchedSubCategories });
 
@@ -61,7 +60,7 @@ export const MyRequestsPage = () => {
             id: item.id,
             categoryName: sub?.category?.name || "Inconnue",
             subcategoryName: sub?.name || "Inconnue",
-            timestamp: item.created_at,
+            timestamp: item.updated_at,
             status: mapStatus(item.status),
           };
         });
@@ -75,7 +74,7 @@ export const MyRequestsPage = () => {
     };
 
     loadAllData();
-  }, []);
+  }, [user?.id]);
 
   const handleBackHome = () => {
     navigate("/");

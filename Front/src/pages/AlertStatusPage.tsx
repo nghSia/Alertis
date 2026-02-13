@@ -43,30 +43,8 @@ export const AlertStatusPage = () => {
   }, [alertData, navigate]);
 
   useEffect(() => {
-    const socket = socketService.connect();
-
-    const userId = sessionStorage.getItem('userId');
-
-    const onConnect = () => {
-      socket?.emit('user:join', {
-        userId: userId,
-        userType: 'client'
-      });
-    };
-
-    if (socket) {
-      if (socket.connected) {
-        onConnect();
-      } else {
-        socket.on('connect', onConnect);
-      }
-    }
-
-    return () => {
-      if (socket) {
-        socket.off('connect', onConnect);
-      }
-    };
+    socketService.connect();
+    socketService.joinChannel("client");
   }, []);
 
   useEffect(() => {
