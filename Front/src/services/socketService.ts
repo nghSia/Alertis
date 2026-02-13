@@ -95,7 +95,6 @@ class SocketService {
       this.socket.once("alert:created", handleAlertCreated);
 
       this.socket.emit("emergency:alert", alertData);
-      console.log("🚨 Alerte d'urgence envoyée:", alertData);
     });
   }
 
@@ -113,21 +112,18 @@ class SocketService {
         token,
         patrolType,
       });
-      console.log("✅ Alerte acceptée:", alertId);
       return true;
     } else {
       console.error("❌ Socket non connecté. Impossible d'accepter l'alerte.");
       return false;
     }
   }
-
   resolveAlert(alertId: string, patrolType: string) {
     if (this.socket && this.socket.connected) {
       this.socket.emit("emergency:resolve", {
         alertId,
         patrolType,
       });
-      console.log("✅ Alerte résolue:", alertId);
       return true;
     } else {
       console.error("❌ Socket non connecté. Impossible de résoudre l'alerte.");

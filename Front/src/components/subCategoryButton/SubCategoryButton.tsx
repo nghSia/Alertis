@@ -40,7 +40,6 @@ export function SubCategoryButton({
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
         };
-        console.log("localisation disponible:", location);
       }
     } catch (error) {
       console.log("Géolocalisation non disponible ou refusée");
@@ -53,8 +52,6 @@ export function SubCategoryButton({
       timestamp: new Date().toISOString(),
       location,
     };
-
-    console.log("Sending alert data:", alertData);
 
     try {
       const alertId = await sendEmergencyAlert(alertData);
