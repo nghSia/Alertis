@@ -195,10 +195,7 @@ class SocketService {
   ) {
     if (!this.socket) return;
 
-    console.log("🔌 onAlertStatusUpdate: Enregistrement du listener");
-
     const listener = (data: { alertId: string; status: string }) => {
-      console.log("🔌 onAlertStatusUpdate: Événement reçu!", data);
       callback(data);
     };
 

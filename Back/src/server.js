@@ -90,7 +90,6 @@ io.on("connection", (socket) => {
           return socket.emit("error", "Authentification échouée");
         }
 
-        // Le "sub" dans le token Supabase correspond à l'ID de l'utilisateur
         const clientId = decoded.sub;
 
         // Avant de sauvegarder, on injecte le userId du client dans les données de l'alerte

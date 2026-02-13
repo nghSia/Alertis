@@ -10,7 +10,7 @@ import { useEffect, useRef, useState } from "react";
 import { MapComponent } from "../components/map/Map";
 import type { Alert as PatrolAlert } from "../services/PatrolService";
 import { getAlertsByStatus } from "../services/PatrolService";
-import socketService from "../services/socket";
+import socketService from "../services/socketService.ts";
 import { supabase } from "../integrations/supabase/client";
 import { useAuth } from "../contexts/AuthContext";
 import "./PatrolDashboard.css";

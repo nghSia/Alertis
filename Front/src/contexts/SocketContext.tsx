@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect } from "react";
-import socketService from "../services/socket";
+import socketService from "../services/socketService.ts";
 
 interface SocketContextType {
   sendEmergencyAlert: (data: {
